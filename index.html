@@ -436,16 +436,12 @@
       <div class="section-title">Forma do Card</div>
       <div style="display:flex;flex-direction:column;gap:14px">
         <div class="control-row">
-          <div class="control-label"><span>Largura</span><span id="val-w">160</span></div>
-          <input type="range" id="card-w" min="80" max="380" value="160">
+          <div class="control-label"><span>Tamanho</span><span id="val-size">100</span><span style="color:var(--text-muted);font-size:11px">%</span></div>
+          <input type="range" id="card-size" min="30" max="180" value="100">
         </div>
         <div class="control-row">
-          <div class="control-label"><span>Altura</span><span id="val-h">240</span></div>
-          <input type="range" id="card-h" min="80" max="380" value="240">
-        </div>
-        <div class="control-row">
-          <div class="control-label"><span>Arredondamento</span><span id="val-r">20</span></div>
-          <input type="range" id="corner-r" min="0" max="80" value="20">
+          <div class="control-label"><span>Arredondamento</span><span id="val-r">19</span></div>
+          <input type="range" id="corner-r" min="0" max="80" value="19">
         </div>
       </div>
     </div>
@@ -488,12 +484,12 @@
     <div>
       <div class="section-title">Fundo</div>
       <div class="bg-options">
-        <button class="bg-btn active" data-bg="white">Branco</button>
+        <button class="bg-btn" data-bg="white">Branco</button>
         <button class="bg-btn" data-bg="transparent">Transparente</button>
-        <button class="bg-btn" data-bg="custom">Custom</button>
+        <button class="bg-btn active" data-bg="custom">Custom</button>
       </div>
-      <div class="bg-custom" id="bg-custom-row" style="display:none;margin-top:10px">
-        <input type="color" id="bg-color" value="#111111">
+      <div class="bg-custom" id="bg-custom-row" style="display:flex;margin-top:10px">
+        <input type="color" id="bg-color" value="#fff7f0">
         <label>Cor de fundo</label>
       </div>
     </div>
@@ -538,35 +534,46 @@
 <script>
 // ── PALETTE ──────────────────────────────────────────────
 const PALETTE = [
-  { name: 'Refeição',      main: '#C8002F', shadow: '#7A001C' },
-  { name: 'Alimentação',   main: '#FF6900', shadow: '#9A3F00' },
-  { name: 'Mobilidade',    main: '#006EE0', shadow: '#00418A' },
-  { name: 'Saúde',         main: '#00A868', shadow: '#006640' },
-  { name: 'Cultura',       main: '#8B2FC9', shadow: '#551A7A' },
-  { name: 'Home Office',   main: '#00BAAB', shadow: '#006E67' },
-  { name: 'Educação',      main: '#FF3B5C', shadow: '#9B0024' },
-  { name: 'Multibenef.',   main: '#9B0034', shadow: '#5C001F' },
-  { name: 'iFood Red',     main: '#EA1D2C', shadow: '#8E0016' },
-  { name: 'Magenta',       main: '#E0007B', shadow: '#870049' },
-  { name: 'Laranja claro', main: '#FF9100', shadow: '#994E00' },
-  { name: 'Rosa',          main: '#FF5C8A', shadow: '#9B0033' },
+  // Família vinho/berry
+  { name: '#2D0115', main: '#2D0115', shadow: '#160009' },
+  { name: '#41021D', main: '#41021D', shadow: '#20010E' },
+  { name: '#69022D', main: '#69022D', shadow: '#340116' },
+  { name: '#8F0340', main: '#8F0340', shadow: '#480220' },
+  { name: '#B5004C', main: '#B5004C', shadow: '#5A0026' },
+  { name: '#FF2588', main: '#FF2588', shadow: '#B5004C' },
+  { name: '#FF63AA', main: '#FF63AA', shadow: '#CC2D70' },
+  { name: '#FFA2CC', main: '#FFA2CC', shadow: '#CC5A90' },
+  { name: '#FFC1DD', main: '#FFC1DD', shadow: '#CC7EA0' },
+  // Família verde/mint
+  { name: '#CFFAE9', main: '#CFFAE9', shadow: '#7DE3BA' },
+  { name: '#B0F8DB', main: '#B0F8DB', shadow: '#69D1A7' },
+  { name: '#91F5CD', main: '#91F5CD', shadow: '#469D81' },
+  { name: '#7DE3BA', main: '#7DE3BA', shadow: '#3D8C6B' },
+  { name: '#69D1A7', main: '#69D1A7', shadow: '#236A5C' },
+  { name: '#469D81', main: '#469D81', shadow: '#1A5040' },
+  { name: '#236A5C', main: '#236A5C', shadow: '#0A2E28' },
+  { name: '#003636', main: '#003636', shadow: '#001A1A' },
+  { name: '#001D1D', main: '#001D1D', shadow: '#000D0D' },
 ];
 
 // ── STATE ─────────────────────────────────────────────────
+// Original iFood Benefícios card ratio (portrait, measured from reference)
+const CARD_BASE_W = 160;
+const CARD_BASE_H = 225; // ~5:7.1 ratio matching the original card
+
 const state = {
-  colorIndex: 7,          // Multibenef. (wine, as in reference image)
+  colorIndex: 4,          // #B5004C — berry principal
   autoShadow: true,
   shadowColor: '#5c001f',
-  cardW: 160,
-  cardH: 240,
-  cornerR: 20,
+  cardSize: 100,          // % of base size
+  cornerR: 19,
   numCards: 4,
   spread: 12,
   baseRot: 0,
   extrusion: 16,
   extAngle: 135,
-  bg: 'white',
-  bgColor: '#111111',
+  bg: 'custom',
+  bgColor: '#fff7f0',
   exportW: 800,
   exportH: 600,
 };
@@ -596,7 +603,9 @@ function buildSVG(w, h) {
   const cy = h / 2;
   const color = PALETTE[state.colorIndex].main;
   const shadow = getCurrentShadow();
-  const { cardW, cardH, cornerR, numCards, spread, baseRot, extrusion, extAngle } = state;
+  const cardW = CARD_BASE_W * state.cardSize / 100;
+  const cardH = CARD_BASE_H * state.cardSize / 100;
+  const { cornerR, numCards, spread, baseRot, extrusion, extAngle } = state;
 
   const ex = Math.cos(extAngle * Math.PI / 180) * extrusion;
   const ey = Math.sin(extAngle * Math.PI / 180) * extrusion;
@@ -635,12 +644,15 @@ function buildSVG(w, h) {
   }
 
   // Draw front card shapes (on top)
+  const outlineColor = getCurrentShadow();
+  const outlineW = Math.max(2, Math.round(cardW * 0.018));
   let fronts = '';
   for (const angle of angles) {
     fronts += `<rect
       x="${cx - cardW/2}" y="${cy - cardH/2}"
       width="${cardW}" height="${cardH}" rx="${cornerR}" ry="${cornerR}"
       fill="${color}"
+      stroke="${outlineColor}" stroke-width="${outlineW}"
       transform="rotate(${angle} ${cx} ${cy})"
     />`;
   }
@@ -744,8 +756,7 @@ function randomize() {
   state.numCards   = rand(2, 10);
   state.spread     = rand(5, 40);
   state.baseRot    = rand(0, 360);
-  state.cardW      = rand(100, 280);
-  state.cardH      = rand(100, 320);
+  state.cardSize   = rand(50, 150);
   state.cornerR    = rand(0, 60);
   state.extrusion  = rand(0, 50);
   state.extAngle   = rand(0, 360);
@@ -758,8 +769,7 @@ function randomize() {
 
 function syncAllSliders() {
   const pairs = [
-    ['card-w','val-w','cardW'],
-    ['card-h','val-h','cardH'],
+    ['card-size','val-size','cardSize'],
     ['corner-r','val-r','cornerR'],
     ['num-cards','val-n','numCards'],
     ['spread','val-spread','spread'],
@@ -780,8 +790,7 @@ function getExportSize() {
 // ── INIT ──────────────────────────────────────────────────
 buildPaletteUI();
 
-bindSlider('card-w',    'val-w',      'cardW');
-bindSlider('card-h',    'val-h',      'cardH');
+bindSlider('card-size', 'val-size',   'cardSize');
 bindSlider('corner-r',  'val-r',      'cornerR');
 bindSlider('num-cards', 'val-n',      'numCards');
 bindSlider('spread',    'val-spread', 'spread');
@@ -837,4 +846,4 @@ document.getElementById('btn-png').addEventListener('click', downloadPNG);
 render();
 </script>
 </body>
-</html>      
+</html>
