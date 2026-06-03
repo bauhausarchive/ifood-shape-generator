@@ -647,13 +647,14 @@ function buildSVG(w, h) {
   const outlineColor = getCurrentShadow();
   const outlineW = Math.max(2, Math.round(cardW * 0.018));
   let fronts = '';
-  for (const angle of angles) {
+  for (let i = 0; i < angles.length; i++) {
+    const isTop = i === angles.length - 1;
     fronts += `<rect
       x="${cx - cardW/2}" y="${cy - cardH/2}"
       width="${cardW}" height="${cardH}" rx="${cornerR}" ry="${cornerR}"
       fill="${color}"
-      stroke="${outlineColor}" stroke-width="${outlineW}"
-      transform="rotate(${angle} ${cx} ${cy})"
+      ${isTop ? `stroke="${outlineColor}" stroke-width="${outlineW}"` : ''}
+      transform="rotate(${angles[i]} ${cx} ${cy})"
     />`;
   }
 
