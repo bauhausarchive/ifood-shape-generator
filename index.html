@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iFood Benefícios · Shape Generator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #111;
+      --surface: #1a1a1a;
+      --surface2: #242424;
+      --border: #333;
+      --text: #f0f0f0;
+      --text-muted: #888;
+      --accent: #EA1D2C;
+      --radius: 12px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 20px 32px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo {
+      width: 32px; height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 18px; color: white;
+    }
+
+    header h1 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    header span {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .workspace {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── CONTROLS PANEL ── */
+    .panel {
+      width: 300px;
+      min-width: 300px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    /* Palette */
+    .palette-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .swatch {
+      border-radius: 8px;
+      aspect-ratio: 1;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform .15s, border-color .15s;
+      position: relative;
+    }
+
+    .swatch:hover { transform: scale(1.08); }
+    .swatch.active { border-color: white; }
+
+    .swatch-label {
+      position: absolute;
+      bottom: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 9px;
+      white-space: nowrap;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .palette-row {
+      margin-bottom: 20px;
+    }
+
+    /* Sliders */
+    .control-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .control-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+    }
+
+    .control-label span:last-child {
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+      min-width: 36px;
+      text-align: right;
+    }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: white;
+      cursor: pointer;
+      transition: transform .1s;
+    }
+
+    input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+    /* Bg color */
+    .bg-options {
+      display: flex;
+      gap: 8px;
+    }
+
+    .bg-btn {
+      flex: 1;
+      padding: 8px;
+      border-radius: 8px;
+      border: 2px solid var(--border);
+      cursor: pointer;
+      font-size: 12px;
+      text-align: center;
+      background: var(--surface2);
+      color: var(--text);
+      transition: border-color .15s;
+    }
+
+    .bg-btn.active { border-color: white; }
+
+    .bg-custom {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .bg-custom input[type=color] {
+      width: 40px; height: 32px;
+      border: none; border-radius: 6px;
+      cursor: pointer; background: none;
+      padding: 0;
+    }
+
+    .bg-custom label { font-size: 12px; color: var(--text-muted); }
+
+    /* Buttons */
+    .btn-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: opacity .15s, transform .1s;
+    }
+
+    .btn:hover { opacity: .85; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-full {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+
+    .btn-full:hover { opacity: .8; }
+
+    .export-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-export {
+      flex: 1;
+      padding: 11px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background .15s;
+    }
+
+    .btn-export:hover { background: #2e2e2e; }
+
+    /* ── PREVIEW ── */
+    .preview {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0d0d0d;
+      padding: 40px;
+      position: relative;
+    }
+
+    .preview-inner {
+      position: relative;
+      box-shadow: 0 32px 80px rgba(0,0,0,.6);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    #svg-preview {
+      display: block;
+      max-width: 100%;
+      max-height: calc(100vh - 120px);
+    }
+
+    .preview-toolbar {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .tool-btn {
+      padding: 8px 14px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 8px;
+      color: white;
+      font-size: 12px;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: background .15s;
+    }
+
+    .tool-btn:hover { background: rgba(255,255,255,.16); }
+
+    .size-info {
+      position: absolute;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: rgba(255,255,255,.3);
+      letter-spacing: .5px;
+    }
+
+    /* toggle */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .toggle-label { font-size: 13px; }
+
+    .toggle {
+      position: relative;
+      width: 36px; height: 20px;
+    }
+
+    .toggle input { opacity: 0; width: 0; height: 0; }
+
+    .toggle-track {
+      position: absolute;
+      inset: 0;
+      background: var(--border);
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background .2s;
+    }
+
+    .toggle input:checked + .toggle-track { background: var(--accent); }
+
+    .toggle-track::after {
+      content: '';
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: white;
+      transition: transform .2s;
+    }
+
+    .toggle input:checked + .toggle-track::after { transform: translateX(16px); }
+
+    /* Mode tabs */
+    .mode-tabs {
+      display: flex;
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 3px;
+    }
+
+    .mode-tab {
+      flex: 1;
+      padding: 7px;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+
+    .mode-tab.active {
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    @media (max-width: 768px) {
+      .workspace { flex-direction: column; }
+      .panel { width: 100%; min-width: unset; border-right: none; border-bottom: 1px solid var(--border); }
+      .preview { min-height: 50vh; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">if</div>
+  <div>
+    <h1>iFood Benefícios · Shape Generator</h1>
+    <span>Gere shapes infinitos a partir do card iFood Benefícios</span>
+  </div>
+</header>
+
+<div class="workspace">
+
+  <!-- ── CONTROLS ── -->
+  <div class="panel">
+
+    <!-- PALETTE -->
+    <div>
+      <div class="section-title">Paleta iFood Benefícios</div>
+      <div class="palette-grid" id="palette-grid"></div>
+    </div>
+
+    <!-- SHADOW COLOR -->
+    <div>
+      <div class="section-title">Sombra / Extrusão</div>
+      <div class="toggle-row" style="margin-bottom:10px">
+        <span class="toggle-label">Automática (mais escura)</span>
+        <label class="toggle">
+          <input type="checkbox" id="auto-shadow" checked>
+          <div class="toggle-track"></div>
+        </label>
+      </div>
+      <div id="shadow-custom" style="display:none">
+        <div class="bg-custom">
+          <input type="color" id="shadow-color" value="#5c0018">
+          <label>Cor da extrusão</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD SHAPE -->
+    <div>
+      <div class="section-title">Forma do Card</div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="control-row">
+          <div class="control-label"><span>Largura</span><span id="val-w">160</span></div>
+          <input type="range" id="card-w" min="80" max="380" value="160">
+        </div>
+        <div class="control-row">
+          <div class="control-label"><span>Altura</span><span id="val-h">240</span></div>
+          <input type="range" id="card-h" min="80" max="380" value="240">
+        </div>
+        <div class="control-row">
+          <div class="control-label"><span>Arredondamento</span><span id="val-r">20</span></div>
+          <input type="range" id="corner-r" min="0" max="80" value="20">
+        </div>
+      </div>
+    </div>
+
+    <!-- STACK -->
+    <div>
+      <div class="section-title">Empilhamento</div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="control-row">
+          <div class="control-label"><span>Quantidade de cards</span><span id="val-n">4</span></div>
+          <input type="range" id="num-cards" min="1" max="14" value="4">
+        </div>
+        <div class="control-row">
+          <div class="control-label"><span>Abertura (°)</span><span id="val-spread">12</span></div>
+          <input type="range" id="spread" min="0" max="60" value="12">
+        </div>
+        <div class="control-row">
+          <div class="control-label"><span>Rotação base (°)</span><span id="val-base">0</span></div>
+          <input type="range" id="base-rot" min="0" max="360" value="0">
+        </div>
+      </div>
+    </div>
+
+    <!-- EXTRUSION -->
+    <div>
+      <div class="section-title">Extrusão 3D</div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="control-row">
+          <div class="control-label"><span>Profundidade</span><span id="val-ext">16</span></div>
+          <input type="range" id="extrusion" min="0" max="80" value="16">
+        </div>
+        <div class="control-row">
+          <div class="control-label"><span>Ângulo (°)</span><span id="val-extang">135</span></div>
+          <input type="range" id="ext-angle" min="0" max="360" value="135">
+        </div>
+      </div>
+    </div>
+
+    <!-- BACKGROUND -->
+    <div>
+      <div class="section-title">Fundo</div>
+      <div class="bg-options">
+        <button class="bg-btn active" data-bg="white">Branco</button>
+        <button class="bg-btn" data-bg="transparent">Transparente</button>
+        <button class="bg-btn" data-bg="custom">Custom</button>
+      </div>
+      <div class="bg-custom" id="bg-custom-row" style="display:none;margin-top:10px">
+        <input type="color" id="bg-color" value="#111111">
+        <label>Cor de fundo</label>
+      </div>
+    </div>
+
+    <!-- OUTPUT SIZE -->
+    <div>
+      <div class="section-title">Resolução do export</div>
+      <div class="mode-tabs" id="size-tabs">
+        <button class="mode-tab active" data-size="800x600">800×600</button>
+        <button class="mode-tab" data-size="1200x900">1200×900</button>
+        <button class="mode-tab" data-size="2400x1800">2×</button>
+      </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="btn btn-primary" id="btn-randomize">⟳ Randomizar Shape</button>
+      <div class="export-row">
+        <button class="btn-export" id="btn-svg">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          SVG
+        </button>
+        <button class="btn-export" id="btn-png">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          PNG
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /panel -->
+
+  <!-- ── PREVIEW ── -->
+  <div class="preview" id="preview-area">
+    <div class="preview-inner" id="preview-inner">
+      <svg id="svg-preview" width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div class="size-info" id="size-info">800 × 600 px</div>
+  </div>
+
+</div><!-- /workspace -->
+
+<script>
+// ── PALETTE ──────────────────────────────────────────────
+const PALETTE = [
+  { name: 'Refeição',      main: '#C8002F', shadow: '#7A001C' },
+  { name: 'Alimentação',   main: '#FF6900', shadow: '#9A3F00' },
+  { name: 'Mobilidade',    main: '#006EE0', shadow: '#00418A' },
+  { name: 'Saúde',         main: '#00A868', shadow: '#006640' },
+  { name: 'Cultura',       main: '#8B2FC9', shadow: '#551A7A' },
+  { name: 'Home Office',   main: '#00BAAB', shadow: '#006E67' },
+  { name: 'Educação',      main: '#FF3B5C', shadow: '#9B0024' },
+  { name: 'Multibenef.',   main: '#9B0034', shadow: '#5C001F' },
+  { name: 'iFood Red',     main: '#EA1D2C', shadow: '#8E0016' },
+  { name: 'Magenta',       main: '#E0007B', shadow: '#870049' },
+  { name: 'Laranja claro', main: '#FF9100', shadow: '#994E00' },
+  { name: 'Rosa',          main: '#FF5C8A', shadow: '#9B0033' },
+];
+
+// ── STATE ─────────────────────────────────────────────────
+const state = {
+  colorIndex: 7,          // Multibenef. (wine, as in reference image)
+  autoShadow: true,
+  shadowColor: '#5c001f',
+  cardW: 160,
+  cardH: 240,
+  cornerR: 20,
+  numCards: 4,
+  spread: 12,
+  baseRot: 0,
+  extrusion: 16,
+  extAngle: 135,
+  bg: 'white',
+  bgColor: '#111111',
+  exportW: 800,
+  exportH: 600,
+};
+
+// ── HELPERS ───────────────────────────────────────────────
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return [r,g,b];
+}
+
+function darken(hex, amount=0.45) {
+  const [r,g,b] = hexToRgb(hex);
+  const f = 1 - amount;
+  return '#' + [r,g,b].map(c => Math.round(c*f).toString(16).padStart(2,'0')).join('');
+}
+
+function getCurrentShadow() {
+  if (state.autoShadow) return darken(PALETTE[state.colorIndex].main);
+  return state.shadowColor;
+}
+
+// ── SVG BUILDER ───────────────────────────────────────────
+function buildSVG(w, h) {
+  const cx = w / 2;
+  const cy = h / 2;
+  const color = PALETTE[state.colorIndex].main;
+  const shadow = getCurrentShadow();
+  const { cardW, cardH, cornerR, numCards, spread, baseRot, extrusion, extAngle } = state;
+
+  const ex = Math.cos(extAngle * Math.PI / 180) * extrusion;
+  const ey = Math.sin(extAngle * Math.PI / 180) * extrusion;
+
+  // Generate card angles
+  const angles = [];
+  if (numCards === 1) {
+    angles.push(baseRot);
+  } else {
+    const totalSpread = spread * (numCards - 1);
+    for (let i = 0; i < numCards; i++) {
+      angles.push(baseRot - totalSpread / 2 + i * spread);
+    }
+  }
+
+  // Build a rounded-rect path helper
+  function rrect(x, y, rw, rh, rx, angle, pivotX, pivotY) {
+    const transform = `rotate(${angle} ${pivotX} ${pivotY})`;
+    return `<rect x="${x}" y="${y}" width="${rw}" height="${rh}" rx="${rx}" ry="${rx}" fill-opacity="1" transform="${transform}"/>`;
+  }
+
+  let bg = '';
+  if (state.bg === 'white') bg = `<rect width="${w}" height="${h}" fill="white"/>`;
+  else if (state.bg === 'custom') bg = `<rect width="${w}" height="${h}" fill="${state.bgColor}"/>`;
+  // transparent = no bg rect
+
+  // Draw shadow shapes (behind)
+  let shadows = '';
+  for (const angle of angles) {
+    shadows += `<rect
+      x="${cx - cardW/2 + ex}" y="${cy - cardH/2 + ey}"
+      width="${cardW}" height="${cardH}" rx="${cornerR}" ry="${cornerR}"
+      fill="${shadow}"
+      transform="rotate(${angle} ${cx + ex} ${cy + ey})"
+    />`;
+  }
+
+  // Draw front card shapes (on top)
+  let fronts = '';
+  for (const angle of angles) {
+    fronts += `<rect
+      x="${cx - cardW/2}" y="${cy - cardH/2}"
+      width="${cardW}" height="${cardH}" rx="${cornerR}" ry="${cornerR}"
+      fill="${color}"
+      transform="rotate(${angle} ${cx} ${cy})"
+    />`;
+  }
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+  ${bg}
+  <g id="shadows">${shadows}</g>
+  <g id="cards">${fronts}</g>
+</svg>`;
+}
+
+// ── RENDER ────────────────────────────────────────────────
+function render() {
+  const svgEl = document.getElementById('svg-preview');
+  const svgStr = buildSVG(800, 600);
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(svgStr, 'image/svg+xml');
+  const newSvg = doc.documentElement;
+
+  // Copy children into existing svg element (preserves size/style)
+  while (svgEl.firstChild) svgEl.removeChild(svgEl.firstChild);
+  while (newSvg.firstChild) {
+    svgEl.appendChild(svgEl.ownerDocument.adoptNode(newSvg.firstChild));
+  }
+}
+
+// ── PALETTE UI ────────────────────────────────────────────
+function buildPaletteUI() {
+  const grid = document.getElementById('palette-grid');
+  grid.innerHTML = '';
+  PALETTE.forEach((p, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'swatch' + (i === state.colorIndex ? ' active' : '');
+    btn.style.background = p.main;
+    btn.title = p.name;
+    btn.innerHTML = `<span class="swatch-label">${p.name}</span>`;
+    btn.addEventListener('click', () => {
+      state.colorIndex = i;
+      document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+      btn.classList.add('active');
+      render();
+    });
+    grid.appendChild(btn);
+  });
+}
+
+// ── SLIDER SYNC ───────────────────────────────────────────
+function bindSlider(id, valId, stateKey, transform) {
+  const el = document.getElementById(id);
+  const vl = document.getElementById(valId);
+  el.value = state[stateKey];
+  vl.textContent = transform ? transform(state[stateKey]) : state[stateKey];
+  el.addEventListener('input', () => {
+    state[stateKey] = Number(el.value);
+    vl.textContent = transform ? transform(state[stateKey]) : el.value;
+    render();
+  });
+}
+
+// ── DOWNLOAD SVG ──────────────────────────────────────────
+function downloadSVG() {
+  const [w, h] = getExportSize();
+  const svgStr = buildSVG(w, h);
+  const blob = new Blob([svgStr], { type: 'image/svg+xml' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `ifood-shape-${Date.now()}.svg`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── DOWNLOAD PNG ──────────────────────────────────────────
+function downloadPNG() {
+  const [w, h] = getExportSize();
+  const svgStr = buildSVG(w, h);
+  const img = new Image();
+  const blob = new Blob([svgStr], { type: 'image/svg+xml' });
+  const url = URL.createObjectURL(blob);
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    if (state.bg === 'transparent') {
+      // keep transparent
+    }
+    ctx.drawImage(img, 0, 0, w, h);
+    URL.revokeObjectURL(url);
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = `ifood-shape-${Date.now()}.png`;
+    a.click();
+  };
+  img.src = url;
+}
+
+// ── RANDOMIZE ─────────────────────────────────────────────
+function randomize() {
+  const rand = (min, max) => Math.round(Math.random() * (max - min) + min);
+  state.colorIndex = rand(0, PALETTE.length - 1);
+  state.numCards   = rand(2, 10);
+  state.spread     = rand(5, 40);
+  state.baseRot    = rand(0, 360);
+  state.cardW      = rand(100, 280);
+  state.cardH      = rand(100, 320);
+  state.cornerR    = rand(0, 60);
+  state.extrusion  = rand(0, 50);
+  state.extAngle   = rand(0, 360);
+
+  // Sync sliders
+  syncAllSliders();
+  buildPaletteUI();
+  render();
+}
+
+function syncAllSliders() {
+  const pairs = [
+    ['card-w','val-w','cardW'],
+    ['card-h','val-h','cardH'],
+    ['corner-r','val-r','cornerR'],
+    ['num-cards','val-n','numCards'],
+    ['spread','val-spread','spread'],
+    ['base-rot','val-base','baseRot'],
+    ['extrusion','val-ext','extrusion'],
+    ['ext-angle','val-extang','extAngle'],
+  ];
+  pairs.forEach(([id, valId, key]) => {
+    document.getElementById(id).value = state[key];
+    document.getElementById(valId).textContent = state[key];
+  });
+}
+
+function getExportSize() {
+  return [state.exportW, state.exportH];
+}
+
+// ── INIT ──────────────────────────────────────────────────
+buildPaletteUI();
+
+bindSlider('card-w',    'val-w',      'cardW');
+bindSlider('card-h',    'val-h',      'cardH');
+bindSlider('corner-r',  'val-r',      'cornerR');
+bindSlider('num-cards', 'val-n',      'numCards');
+bindSlider('spread',    'val-spread', 'spread');
+bindSlider('base-rot',  'val-base',   'baseRot');
+bindSlider('extrusion', 'val-ext',    'extrusion');
+bindSlider('ext-angle', 'val-extang', 'extAngle');
+
+// Auto-shadow toggle
+document.getElementById('auto-shadow').addEventListener('change', e => {
+  state.autoShadow = e.target.checked;
+  document.getElementById('shadow-custom').style.display = e.target.checked ? 'none' : 'block';
+  render();
+});
+
+// Shadow color picker
+document.getElementById('shadow-color').addEventListener('input', e => {
+  state.shadowColor = e.target.value;
+  render();
+});
+
+// Background buttons
+document.querySelectorAll('.bg-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.bg-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.bg = btn.dataset.bg;
+    document.getElementById('bg-custom-row').style.display = state.bg === 'custom' ? 'flex' : 'none';
+    render();
+  });
+});
+
+document.getElementById('bg-color').addEventListener('input', e => {
+  state.bgColor = e.target.value;
+  render();
+});
+
+// Export size tabs
+document.querySelectorAll('#size-tabs .mode-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#size-tabs .mode-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const [w, h] = btn.dataset.size.split('x').map(Number);
+    state.exportW = w; state.exportH = h;
+    document.getElementById('size-info').textContent = `${w} × ${h} px`;
+  });
+});
+
+document.getElementById('btn-randomize').addEventListener('click', randomize);
+document.getElementById('btn-svg').addEventListener('click', downloadSVG);
+document.getElementById('btn-png').addEventListener('click', downloadPNG);
+
+// Initial render
+render();
+</script>
+</body>
+</html>
